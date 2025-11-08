@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <system.webServer>
+
+    <!-- Serve your static dashboard files -->
+    <defaultDocument>
+      <files>
+        <add value="index.html" />
+      </files>
+    </defaultDocument>
+
+    <staticContent>
+      <mimeMap fileExtension=".json" mimeType="application/json" />
+      <mimeMap fileExtension=".map"  mimeType="application/json" />
+      <mimeMap fileExtension=".woff2" mimeType="font/woff2" />
+    </staticContent>
+
+    <!-- Reverse proxy /api/* to Flask on localhost:5000 -->
+    <rewrite>
+      <!-- Allow setting X-Forwarded-* headers from a site-level web.config -->
+      <allowedServerVariables>
+        <add name="HTTP_X_Forwarded_For" />
+        <add name="HTTP_X_Forwarded_Proto" />
+        <add name="HTTP_X_Original-Host" />
+      </allowedServerVariables>
+
+      <rules>
+
+        <!-- Proxy all API routes, including preflight OPTIONS -->
+        <rule name="ReverseProxy_API" stopProcessing="true">
+          <match url="^api/(.*)" />
+          <conditions logicalGrouping="MatchAll" trackAllCaptures="false">
+            <!-- Always proxy (no extra conditions needed) -->
+          </conditions>
+          <action type="Rewrite"
+                  url="http://localhost:5000/api/{R:1}"
+                  appendQueryString="true"
+                  logRewrittenUrl="true" />
+          <serverVariables>
+            <set name="HTTP_X_Forwarded_For"   value="{REMOTE_ADDR}" />
+            <set name="HTTP_X_Forwarded_Proto" value="http" />
+            <set name="HTTP_X_Original-Host"   value="{HTTP_HOST}" />
+          </serverVariables>
+        </rule>
+
+        <!-- Optional: redirect bare / to /index.html -->
+        <rule name="RootToIndex" stopProcessing="true">
+          <match url="^$" />
+          <action type="Redirect" url="/index.html" redirectType="Permanent" />
+        </rule>
+
+      </rules>
+
+      <!-- (Optional) Add CORS headers on JSON responses if your Flask CORS is disabled -->
+      <outboundRules>
+        <rule name="AddCORS_Origin" preCondition="IsJsonOrApi">
+          <match serverVariable="RESPONSE_Access-Control-Allow-Origin" pattern=".*" />
+          <action type="Rewrite" value="*" />
+        </rule>
+        <rule name="AddCORS_Methods" preCondition="IsJsonOrApi">
+          <match serverVariable="RESPONSE_Access-Control-Allow-Methods" pattern=".*" />
+          <action type="Rewrite" value="GET, POST, PUT, PATCH, DELETE, OPTIONS" />
+        </rule>
+        <rule name="AddCORS_Headers" preCondition="IsJsonOrApi">
+          <match serverVariable="RESPONSE_Access-Control-Allow-Headers" pattern=".*" />
+          <action type="Rewrite" value="Content-Type, Authorization, X-Requested-With" />
+        </rule>
+        <preConditions>
+          <preCondition name="IsJsonOrApi">
+            <add input="{RESPONSE_Content-Type}" pattern="(^application/json)|(^text/json)" />
+          </preCondition>
+        </preConditions>
+      </outboundRules>
+    </rewrite>
+
+    <!-- Add CORS headers for non-JSON preflight responses -->
+    <httpProtocol>
+      <customHeaders>
+        <add name="Access-Control-Allow-Origin" value="*" />
+        <add name="Access-Control-Allow-Methods" value="GET, POST, PUT, PATCH, DELETE, OPTIONS" />
+        <add name="Access-Control-Allow-Headers" value="Content-Type, Authorization, X-Requested-With" />
+      </customHeaders>
+    </httpProtocol>
+
+    <!-- Ensure OPTIONS is allowed to reach the proxy -->
+    <security>
+      <requestFiltering>
+        <verbs allowUnlisted="true">
+          <add verb="OPTIONS" allowed="true" />
+        </verbs>
+      </requestFiltering>
+    </security>
+
+  </system.webServer>
+</configuration>

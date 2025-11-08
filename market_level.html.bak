@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Level CQX Metrics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .header .submarket-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .header .region-info {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+
+        .controls-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-group label {
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-back {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-back:hover {
+            background: #edf2f7;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
+        }
+
+        .chart-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .overall-cqi-section {
+            background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 2px solid #667eea;
+        }
+
+        .overall-cqi-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .overall-cqi-title {
+            color: #2d3748;
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cqi-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 1rem;
+        }
+
+        .cqi-current-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .target-values {
+            display: flex;
+            gap: 30px;
+            margin-top: 15px;
+        }
+
+        .target-value-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .target-value-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .target-value-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .target-value-number.green {
+            color: #48bb78;
+        }
+
+        .target-value-number.yellow {
+            color: #ed8936;
+        }
+
+        .target-value-number.yoy {
+            color: #9f7aea;
+        }
+
+        .chart-header {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .chart-header h2 {
+            color: #2d3748;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin-top: 20px;
+        }
+
+        .legend-section {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .legend-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 10px;
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .legend-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend-item.inactive {
+            opacity: 0.4;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            color: #718096;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            color: #2d3748;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .stat-card .subtitle {
+            color: #a0aec0;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .info-note {
+            background: #e6f7ff;
+            border-left: 4px solid #1890ff;
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #0050b3;
+        }
+
+        .target-line-info {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+            padding: 10px;
+            background: #f0f9ff;
+            border-radius: 8px;
+        }
+
+        .target-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .target-line {
+            width: 30px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .target-line.green {
+            background: #48bb78;
+            border: 1px dashed #2f855a;
+        }
+
+        .target-line.yellow {
+            background: #ed8936;
+            border: 1px dashed #c05621;
+        }
+
+        .target-line.yoy {
+            background: #9f7aea;
+            border: 1px dashed #6b46c1;
+        }
+
+        .target-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .comparison-toggle {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #e2e8f0;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #667eea;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .toggle-label {
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Market Level CQX Performance</h1>
+            <div style="margin-top: 15px;">
+                <span class="submarket-badge" id="submarketDisplay">Loading...</span>
+                <span class="region-info" id="regionDisplay">Region: --</span>
+            </div>
+            <div class="info-note" style="margin-top: 20px;">
+                Track CQX metric performance against targets at the submarket level. View trends over time and compare
+                against Green, Yellow, and Year-over-Year targets.
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="regionFilter">Region</label>
+                    <select id="regionFilter">
+                        <option value="">All Regions</option>
+                        <option value="East">East</option>
+                        <option value="West">West</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="stateFilter">State/Area</label>
+                    <select id="stateFilter">
+                        <option value="">All States/Areas</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="submarketFilter">Submarket</label>
+                    <select id="submarketFilter">
+                        <option value="">Select Submarket</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="metricFilter">Metric</label>
+                    <select id="metricFilter">
+                        <option value="">All Metrics</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="weekRange">Week Range</label>
+                    <input type="number" id="weekRange" placeholder="Last N weeks" value="12" min="1" max="52">
+                </div>
+                <div class="control-group">
+                    <label for="chartType">Chart Type</label>
+                    <select id="chartType">
+                        <option value="line">Line Chart</option>
+                        <option value="bar">Bar Chart</option>
+                        <option value="mixed">Mixed (Bar + Line)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="comparison-toggle">
+                <span class="toggle-label">Show Yellow & YoY Targets:</span>
+                <div class="toggle-switch active" id="targetToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+
+            <div class="target-line-info" id="targetInfo">
+                <div class="target-indicator">
+                    <div class="target-line yellow"></div>
+                    <span class="target-label">Yellow Target</span>
+                </div>
+                <div class="target-indicator">
+                    <div class="target-line yoy"></div>
+                    <span class="target-label">YoY Target</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-back" onclick="goBack()">← Back to Dashboard</button>
+                <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+                <button class="btn btn-success" onclick="exportChart()">Export Chart</button>
+            </div>
+        </div>
+
+        <!-- Overall CQX Score Section -->
+        <div class="overall-cqi-section">
+            <div class="overall-cqi-header">
+                <div class="overall-cqi-title">
+                    <span>📈 Overall CQX Score</span>
+                    <span class="cqi-badge">CQI2025</span>
+                    <span class="cqi-badge"
+                        style="background: linear-gradient(135deg, #48bb78 0%, #2f855a 100%);">CQG2025</span>
+                </div>
+            </div>
+            <div class="chart-container" style="height: 300px;">
+                <canvas id="overallCqiChart"></canvas>
+            </div>
+            <div class="target-values">
+                <div class="target-value-item">
+                    <span class="target-value-label">Green Target (CQG2025):</span>
+                    <span class="target-value-number green" id="cqiGreenTarget">--</span>
+                </div>
+                <div class="target-value-item">
+                    <span class="target-value-label">Yellow Target:</span>
+                    <span class="target-value-number yellow" id="cqiYellowTarget">--</span>
+                </div>
+                <div class="target-value-item">
+                    <span class="target-value-label">YoY Target:</span>
+                    <span class="target-value-number yoy" id="cqiYoyTarget">--</span>
+                </div>
+                <div class="target-value-item">
+                    <span class="target-value-label">Latest CQX (CQI2025):</span>
+                    <span class="cqi-current-value" id="latestCqiValue">--</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-header">
+                <h2>CQX Performance Over Time</h2>
+                <span style="color: #718096; font-size: 0.9rem;">Click metrics in legend to show/hide</span>
+            </div>
+
+            <div class="legend-section">
+                <div class="legend-grid" id="legendGrid">
+                    <!-- Metric legends will be dynamically added here -->
+                </div>
+            </div>
+
+            <div id="loadingDiv" class="loading">
+                <div class="loading-spinner"></div>
+                <p style="margin-top: 10px;">Loading market data...</p>
+            </div>
+
+            <div id="chartWrapper" style="display: none;">
+                <div class="chart-container">
+                    <canvas id="marketChart"></canvas>
+                </div>
+
+                <div class="stats-section">
+                    <div class="stat-card">
+                        <h3>Current Week</h3>
+                        <div class="value" id="currentWeek">--</div>
+                        <div class="subtitle">Latest data point</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Metrics Tracked</h3>
+                        <div class="value" id="metricCount">0</div>
+                        <div class="subtitle">Active metrics</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Avg Green Target</h3>
+                        <div class="value" id="avgGreenTarget">--</div>
+                        <div class="subtitle">Across all metrics</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Data Points</h3>
+                        <div class="value" id="dataPoints">0</div>
+                        <div class="subtitle">Total measurements</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="errorDiv" style="display: none;" class="error-message">
+                <p>Unable to load data. Please check the connection and try again.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://cqxdashboard.web.att.com:5000/api';
+        let chart = null;
+        let overallCqiChart = null;
+        let currentData = [];
+        let submarketHierarchy = {};
+        let allMetrics = [];
+        let activeMetrics = new Set();
+        let showTargets = true;
+        let cqi2025Data = [];
+
+        // Color palette for metrics
+        const metricColors = {
+            'ALLRAT_DACC_25_CQI25': 'rgb(255, 99, 132)',
+            'ALLRAT_DDR_25_CQI25': 'rgb(54, 162, 235)',
+            'ALLRAT_DL_TPUT_25_CQI25': 'rgb(255, 206, 86)',
+            'ALLRAT_UL_TPUT_25_CQI25': 'rgb(75, 192, 192)',
+            'LTE_IQI_NS_ESO_25_CQI25': 'rgb(153, 102, 255)',
+            'LTE_IQI_QUALITY_25_CQI25': 'rgb(255, 159, 64)',
+            'LTE_IQI_RSRP_25_CQI25': 'rgb(199, 199, 199)',
+            'VOICE_CDR_RET_25_CQI25': 'rgb(83, 102, 255)',
+            'VOLTE_CDR_MOMT_ACC_25_CQI25': 'rgb(255, 99, 255)',
+            'VOLTE_RAN_ACBACC_25_ALL_CQI25': 'rgb(99, 255, 132)',
+            'CQI2025': 'rgb(102, 126, 234)',
+            'CQG2025': 'rgb(118, 75, 162)'
+        };
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🚀 Market Level Dashboard initializing...');
+            initializeControls();
+            loadSubmarketHierarchy();
+
+            // Check if submarket passed in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const submarket = urlParams.get('submarket');
+            if (submarket) {
+                // Will be set after hierarchy loads
+                setTimeout(() => {
+                    document.getElementById('submarketFilter').value = submarket;
+                    updateSubmarketDisplay(submarket);
+                    fetchMarketData();
+                }, 1000);
+            } else {
+                // Show initial message to select a submarket
+                showError('Please select a submarket from the dropdown to view market level data');
+            }
+        });
+
+        function initializeControls() {
+            // Region filter change
+            document.getElementById('regionFilter').addEventListener('change', function () {
+                filterStatesByRegion(this.value);
+            });
+
+            // State filter change
+            document.getElementById('stateFilter').addEventListener('change', function () {
+                filterSubmarketsByState(this.value);
+            });
+
+            // Submarket filter change
+            document.getElementById('submarketFilter').addEventListener('change', function () {
+                if (this.value) {
+                    updateSubmarketDisplay(this.value);
+                    fetchMarketData();
+                }
+            });
+
+            // Target toggle
+            document.getElementById('targetToggle').addEventListener('click', function () {
+                this.classList.toggle('active');
+                showTargets = this.classList.contains('active');
+                document.getElementById('targetInfo').style.display = showTargets ? 'flex' : 'none';
+                if (chart) {
+                    updateChartTargets();
+                }
+            });
+
+            // Chart type change
+            document.getElementById('chartType').addEventListener('change', function () {
+                if (currentData.length > 0) {
+                    updateChart(currentData);
+                }
+            });
+        }
+
+        function loadSubmarketHierarchy() {
+            // Parse the submarket hierarchy from the provided data
+            const hierarchyData = [
+                'East,E. PA/S. NJ/DE,Harly',
+                'East,E. PA/S. NJ/DE,Philadelphia',
+                'East,Florida,Gainesville',
+                'East,Florida,Jacksonville',
+                'East,Florida,Ocala',
+                'East,Florida,Orlando',
+                'East,Florida,South Florida',
+                'East,Florida,Southwest Florida',
+                'East,Florida,Tallahassee',
+                'East,Florida,Tampa',
+                'East,GA/SC/NC,Asheville',
+                'East,GA/SC/NC,Charlotte',
+                'East,GA/SC/NC,Coastal Georgia',
+                'East,GA/SC/NC,Columbia',
+                'East,GA/SC/NC,Greensboro',
+                'East,GA/SC/NC,Greenville',
+                'East,GA/SC/NC,North Georgia',
+                'East,GA/SC/NC,Raleigh',
+                'East,GA/SC/NC,South Georgia',
+                'East,Gulf States,Baton Rouge',
+                'East,Gulf States,Birmingham',
+                'East,Gulf States,Huntsville',
+                'East,Gulf States,Jackson MS',
+                'East,Gulf States,Lafayette',
+                'East,Gulf States,Mobile',
+                'East,Gulf States,Montgomery',
+                'East,Gulf States,New Orleans',
+                'East,Gulf States,Shreveport',
+                'East,Illinois/Wisconsin,Central Illinois',
+                'East,Illinois/Wisconsin,Chicago',
+                'East,Illinois/Wisconsin,Wisconsin',
+                'East,Michigan/Indiana/Ohio,Detroit',
+                'East,Michigan/Indiana/Ohio,Indianapolis',
+                'East,Michigan/Indiana/Ohio,Northern MI',
+                'East,Michigan/Indiana/Ohio,Northern OH',
+                'East,Michigan/Indiana/Ohio,Outstate MI',
+                'East,Michigan/Indiana/Ohio,Southern OH',
+                'East,NY/NNJ,NYC East',
+                'East,NY/NNJ,NYC Manhattan',
+                'East,NY/NNJ,NYC West',
+                'East,NY/NNJ,Upstate NY',
+                'East,New England,Connecticut',
+                'East,New England,Maine',
+                'East,New England,Massachusetts',
+                'East,New England,New Hampshire',
+                'East,New England,Rhode Island',
+                'East,New England,Vermont',
+                'East,Tennessee/Kentucky,Chattanooga',
+                'East,Tennessee/Kentucky,Evansville',
+                'East,Tennessee/Kentucky,Knoxville',
+                'East,Tennessee/Kentucky,Lexington',
+                'East,Tennessee/Kentucky,Louisville',
+                'East,Tennessee/Kentucky,Memphis',
+                'East,Tennessee/Kentucky,Nashville',
+                'East,VA/WV/WPA,Virginia',
+                'East,VA/WV/WPA,West Virginia',
+                'East,VA/WV/WPA,Western Pennsylvania',
+                'East,Washington DC-Baltimore,Maryland',
+                'East,Washington DC-Baltimore,Washington DC',
+                'West,Arkansas/Oklahoma,Arkansas',
+                'West,Arkansas/Oklahoma,Oklahoma City',
+                'West,Arkansas/Oklahoma,Tulsa OK',
+                'West,Greater Midwest,Kansas City KS',
+                'West,Greater Midwest,St. Louis MO',
+                'West,Hawaii,Hawaii',
+                'West,North Texas,Central Texas',
+                'West,North Texas,Dallas Ft. Worth',
+                'West,North Texas,New Mexico',
+                'West,North Texas,West Texas',
+                'West,Northern California,SF North',
+                'West,Northern California,SF South',
+                'West,Northern California,Sacramento',
+                'West,Northern Plains,Iowa',
+                'West,Northern Plains,Minnesota',
+                'West,Northern Plains,Nebraska',
+                'West,Northern Plains,North Dakota',
+                'West,Northern Plains,South Dakota',
+                'West,Pacific Northwest,Alaska',
+                'West,Pacific Northwest,Oregon',
+                'West,Pacific Northwest,Washington',
+                'West,Rocky Mountain Region,Colorado',
+                'West,Rocky Mountain Region,Idaho',
+                'West,Rocky Mountain Region,Montana',
+                'West,Rocky Mountain Region,Utah',
+                'West,Rocky Mountain Region,Wyoming',
+                'West,South Texas,Austin',
+                'West,South Texas,Houston',
+                'West,South Texas,San Antonio',
+                'West,Southwest States,Arizona',
+                'West,Southwest States,LA Core',
+                'West,Southwest States,LA Inland Empire',
+                'West,Southwest States,LA North',
+                'West,Southwest States,LA South',
+                'West,Southwest States,Las Vegas',
+                'West,Southwest States,San Diego'
+            ];
+
+            // Build hierarchy structure
+            hierarchyData.forEach(line => {
+                const [region, state, submarket] = line.split(',');
+
+                if (!submarketHierarchy[region]) {
+                    submarketHierarchy[region] = {};
+                }
+                if (!submarketHierarchy[region][state]) {
+                    submarketHierarchy[region][state] = [];
+                }
+                submarketHierarchy[region][state].push(submarket);
+            });
+
+            // Populate all submarkets initially
+            const submarketSelect = document.getElementById('submarketFilter');
+            submarketSelect.innerHTML = '<option value="">Select Submarket</option>';
+
+            Object.keys(submarketHierarchy).forEach(region => {
+                Object.keys(submarketHierarchy[region]).forEach(state => {
+                    submarketHierarchy[region][state].forEach(submarket => {
+                        const option = document.createElement('option');
+                        option.value = submarket;
+                        option.textContent = `${submarket} (${state})`;
+                        option.dataset.region = region;
+                        option.dataset.state = state;
+                        submarketSelect.appendChild(option);
+                    });
+                });
+            });
+
+            console.log('📍 Loaded submarket hierarchy:', submarketHierarchy);
+        }
+
+        function filterStatesByRegion(region) {
+            const stateSelect = document.getElementById('stateFilter');
+            stateSelect.innerHTML = '<option value="">All States/Areas</option>';
+
+            if (region && submarketHierarchy[region]) {
+                Object.keys(submarketHierarchy[region]).forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state;
+                    option.textContent = state;
+                    stateSelect.appendChild(option);
+                });
+            }
+
+            // Reset submarket filter
+            filterSubmarketsByState('');
+        }
+
+        function filterSubmarketsByState(state) {
+            const region = document.getElementById('regionFilter').value;
+            const submarketSelect = document.getElementById('submarketFilter');
+            submarketSelect.innerHTML = '<option value="">Select Submarket</option>';
+
+            if (region && state && submarketHierarchy[region] && submarketHierarchy[region][state]) {
+                submarketHierarchy[region][state].forEach(submarket => {
+                    const option = document.createElement('option');
+                    option.value = submarket;
+                    option.textContent = submarket;
+                    option.dataset.region = region;
+                    option.dataset.state = state;
+                    submarketSelect.appendChild(option);
+                });
+            } else if (region && !state && submarketHierarchy[region]) {
+                Object.keys(submarketHierarchy[region]).forEach(state => {
+                    submarketHierarchy[region][state].forEach(submarket => {
+                        const option = document.createElement('option');
+                        option.value = submarket;
+                        option.textContent = `${submarket} (${state})`;
+                        option.dataset.region = region;
+                        option.dataset.state = state;
+                        submarketSelect.appendChild(option);
+                    });
+                });
+            } else if (!region) {
+                // Show all submarkets
+                Object.keys(submarketHierarchy).forEach(region => {
+                    Object.keys(submarketHierarchy[region]).forEach(state => {
+                        submarketHierarchy[region][state].forEach(submarket => {
+                            const option = document.createElement('option');
+                            option.value = submarket;
+                            option.textContent = `${submarket} (${state})`;
+                            option.dataset.region = region;
+                            option.dataset.state = state;
+                            submarketSelect.appendChild(option);
+                        });
+                    });
+                });
+            }
+        }
+
+        function updateSubmarketDisplay(submarket) {
+            const submarketDisplay = document.getElementById('submarketDisplay');
+            const regionDisplay = document.getElementById('regionDisplay');
+
+            submarketDisplay.textContent = submarket;
+
+            // Find region and state for this submarket
+            let foundRegion = '';
+            let foundState = '';
+
+            Object.keys(submarketHierarchy).forEach(region => {
+                Object.keys(submarketHierarchy[region]).forEach(state => {
+                    if (submarketHierarchy[region][state].includes(submarket)) {
+                        foundRegion = region;
+                        foundState = state;
+                    }
+                });
+            });
+
+            regionDisplay.textContent = `${foundRegion} - ${foundState}`;
+        }
+
+        async function fetchMarketData() {
+            const submarket = document.getElementById('submarketFilter').value;
+            const metricFilter = document.getElementById('metricFilter').value;
+            const weekRange = parseInt(document.getElementById('weekRange').value) || 12;
+
+            if (!submarket) {
+                showError('Please select a submarket to view data');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const params = new URLSearchParams({
+                    submarket: submarket,
+                    weekRange: weekRange
+                });
+
+                if (metricFilter) {
+                    params.append('metric', metricFilter);
+                }
+
+                const response = await fetch(`${API_URL}/market-targets?${params}`);
+
+                if (!response.ok) {
+                    throw new Error(`API returned status ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data || data.length === 0) {
+                    showError('No data available for the selected submarket. Please try a different submarket or check if data exists in the database.');
+                    return;
+                }
+
+                currentData = data;
+
+                // Filter for CQI2025 and CQG2025 data for the overall chart
+                cqi2025Data = data.filter(d =>
+                    d.CQI_METRICNAME === 'CQI2025' || d.METRICNAME === 'CQI2025' ||
+                    d.CQI_METRICNAME === 'CQG2025' || d.METRICNAME === 'CQG2025'
+                );
+
+                // Extract ALL unique metrics (including CQI2025 and CQG2025 for selection)
+                allMetrics = [...new Set(data.map(d => d.CQI_METRICNAME || d.METRICNAME))];
+
+                // Only activate the first non-CQI2025/CQG2025 metric initially
+                activeMetrics.clear();
+                const firstMetric = allMetrics.find(m => m !== 'CQI2025' && m !== 'CQG2025');
+                if (firstMetric) {
+                    activeMetrics.add(firstMetric);
+                }
+
+                // Populate metric filter if not already done
+                populateMetricFilter();
+
+                // Create legend with all metrics
+                createMetricLegend();
+
+                // Update overall CQX chart with both CQI2025 and CQG2025
+                updateOverallCqiChart(cqi2025Data);
+
+                // Update individual metrics chart (will show only the first metric initially)
+                updateChart(data);
+
+                // Update statistics
+                updateStatistics(data);
+
+                hideLoading();
+
+            } catch (error) {
+                console.error('Error fetching market data:', error);
+                showError(`Failed to load data: ${error.message}. Please check API connection and ensure Flask server is running.`);
+                hideLoading();
+            }
+        }
+
+        function populateMetricFilter() {
+            const select = document.getElementById('metricFilter');
+            const currentValue = select.value;
+
+            if (select.options.length <= 1 && allMetrics.length > 0) {
+                select.innerHTML = '<option value="">All Metrics</option>';
+                allMetrics.sort().forEach(metric => {
+                    const option = document.createElement('option');
+                    option.value = metric;
+                    option.textContent = metric;
+                    select.appendChild(option);
+                });
+                select.value = currentValue;
+            }
+        }
+
+        function updateOverallCqiChart(cqiData) {
+            if (!cqiData || cqiData.length === 0) return;
+
+            // Group data by week for both CQI2025 and CQG2025
+            const weekData = {};
+            const weeks = new Set();
+
+            currentData.forEach(record => {
+                const week = record.WEEK;
+                const metric = record.CQI_METRICNAME || record.METRICNAME;
+
+                if (metric === 'CQI2025' || metric === 'CQG2025') {
+                    weeks.add(week);
+
+                    if (!weekData[week]) {
+                        weekData[week] = {};
+                    }
+
+                    if (metric === 'CQI2025') {
+                        weekData[week].cqi2025_green = record.CQI_GREEN_TARGET;
+                        weekData[week].cqi2025_yellow = record.CQI_YELLOW_TARGET;
+                        weekData[week].cqi2025_yoy = record.CQI_YOY_TARGET;
+                    } else if (metric === 'CQG2025') {
+                        weekData[week].cqg2025_green = record.CQI_GREEN_TARGET;
+                        weekData[week].cqg2025_yellow = record.CQI_YELLOW_TARGET;
+                        weekData[week].cqg2025_yoy = record.CQI_YOY_TARGET;
+                    }
+                }
+            });
+
+            const sortedWeeks = Array.from(weeks).sort();
+
+            // Update target value displays with latest values
+            if (sortedWeeks.length > 0) {
+                const latestWeek = sortedWeeks[sortedWeeks.length - 1];
+                const latestData = weekData[latestWeek];
+
+                // Display CQG2025 as Green Target, and CQI2025 values for yellow and YoY
+                document.getElementById('cqiGreenTarget').textContent =
+                    latestData.cqg2025_green ? latestData.cqg2025_green.toFixed(2) : '--';
+                document.getElementById('cqiYellowTarget').textContent =
+                    latestData.cqi2025_yellow ? latestData.cqi2025_yellow.toFixed(2) : '--';
+                document.getElementById('cqiYoyTarget').textContent =
+                    latestData.cqi2025_yoy ? latestData.cqi2025_yoy.toFixed(2) : '--';
+                document.getElementById('latestCqiValue').textContent =
+                    latestData.cqi2025_green ? latestData.cqi2025_green.toFixed(2) : '--';
+            }
+
+            // Create datasets for overall CQX chart
+            const datasets = [
+                {
+                    label: 'CQI2025 - Overall CQX Score',
+                    data: sortedWeeks.map(week => ({
+                        x: week,
+                        y: weekData[week] ? weekData[week].cqi2025_green : null
+                    })),
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'CQG2025 - Green Target',
+                    data: sortedWeeks.map(week => ({
+                        x: week,
+                        y: weekData[week] ? weekData[week].cqg2025_green : null
+                    })),
+                    borderColor: '#48bb78',
+                    borderDash: [10, 5],
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    type: 'line'
+                },
+                {
+                    label: 'Yellow Target (CQI2025)',
+                    data: sortedWeeks.map(week => ({
+                        x: week,
+                        y: weekData[week] ? weekData[week].cqi2025_yellow : null
+                    })),
+                    borderColor: '#ed8936',
+                    borderDash: [5, 5],
+                    borderWidth: 1,
+                    fill: false,
+                    pointRadius: 0,
+                    type: 'line'
+                },
+                {
+                    label: 'YoY Target (CQI2025)',
+                    data: sortedWeeks.map(week => ({
+                        x: week,
+                        y: weekData[week] ? weekData[week].cqi2025_yoy : null
+                    })),
+                    borderColor: '#9f7aea',
+                    borderDash: [10, 5],
+                    borderWidth: 1,
+                    fill: false,
+                    pointRadius: 0,
+                    type: 'line'
+                }
+            ];
+
+            // Create or update overall CQX chart
+            const ctx = document.getElementById('overallCqiChart').getContext('2d');
+
+            if (overallCqiChart) {
+                overallCqiChart.destroy();
+            }
+
+            overallCqiChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedWeeks,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: false
+                        },
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function (context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    return `${label}: ${value ? value.toFixed(2) : 'N/A'}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Week'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'CQX Score'
+                            },
+                            min: 85,
+                            max: 100
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        function createMetricLegend() {
+            const legendGrid = document.getElementById('legendGrid');
+            legendGrid.innerHTML = '';
+
+            allMetrics.forEach((metric, index) => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+
+                // Mark as inactive if not in activeMetrics
+                if (!activeMetrics.has(metric)) {
+                    legendItem.classList.add('inactive');
+                }
+
+                legendItem.dataset.metric = metric;
+                legendItem.onclick = () => toggleMetric(metric);
+
+                const color = document.createElement('div');
+                color.className = 'legend-color';
+                color.style.backgroundColor = metricColors[metric] || `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`;
+
+                const label = document.createElement('span');
+                label.textContent = metric;
+
+                legendItem.appendChild(color);
+                legendItem.appendChild(label);
+                legendGrid.appendChild(legendItem);
+            });
+        }
+
+        function toggleMetric(metric) {
+            const legendItem = document.querySelector(`.legend-item[data-metric="${metric}"]`);
+
+            if (activeMetrics.has(metric)) {
+                activeMetrics.delete(metric);
+                legendItem.classList.add('inactive');
+            } else {
+                activeMetrics.add(metric);
+                legendItem.classList.remove('inactive');
+            }
+
+            updateChart(currentData);
+        }
+
+        function updateChart(data) {
+            // Group data by week and metric
+            const weekData = {};
+            const weeks = new Set();
+
+            data.forEach(record => {
+                const week = record.WEEK;
+                const metric = record.CQI_METRICNAME || record.METRICNAME;
+
+                if (!weekData[week]) {
+                    weekData[week] = {};
+                }
+
+                weeks.add(week);
+
+                if (activeMetrics.has(metric)) {
+                    weekData[week][metric] = {
+                        cqi_green: record.CQI_GREEN_TARGET,
+                        cqi_yellow: record.CQI_YELLOW_TARGET,
+                        cqi_yoy: record.CQI_YOY_TARGET,
+                        raw_green: record.RAW_GREEN_TARGET,
+                        raw_yellow: record.RAW_YELLOW_TARGET,
+                        raw_yoy: record.RAW_YOY_TARGET
+                    };
+                }
+            });
+
+            const sortedWeeks = Array.from(weeks).sort();
+            const chartType = document.getElementById('chartType').value;
+
+            // Prepare datasets
+            const datasets = [];
+
+            activeMetrics.forEach(metric => {
+                const color = metricColors[metric] || `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`;
+
+                // Main CQI data
+                datasets.push({
+                    label: metric,
+                    data: sortedWeeks.map(week => ({
+                        x: week,
+                        y: weekData[week] && weekData[week][metric] ? weekData[week][metric].cqi_green : null
+                    })),
+                    borderColor: color,
+                    backgroundColor: color.replace('rgb', 'rgba').replace(')', ', 0.2)'),
+                    type: chartType === 'bar' ? 'bar' : 'line',
+                    borderWidth: 2,
+                    tension: 0.4
+                });
+            });
+
+            // Add yellow and YoY targets if enabled (removed green target)
+            if (showTargets) {
+                activeMetrics.forEach(metric => {
+                    // Yellow target
+                    datasets.push({
+                        label: `${metric} - Yellow Target`,
+                        data: sortedWeeks.map(week => ({
+                            x: week,
+                            y: weekData[week] && weekData[week][metric] ? weekData[week][metric].cqi_yellow : null
+                        })),
+                        borderColor: '#ed8936',
+                        borderDash: [5, 5],
+                        borderWidth: 1,
+                        type: 'line',
+                        fill: false,
+                        pointRadius: 0
+                    });
+
+                    // YoY target
+                    datasets.push({
+                        label: `${metric} - YoY Target`,
+                        data: sortedWeeks.map(week => ({
+                            x: week,
+                            y: weekData[week] && weekData[week][metric] ? weekData[week][metric].cqi_yoy : null
+                        })),
+                        borderColor: '#9f7aea',
+                        borderDash: [10, 5],
+                        borderWidth: 1,
+                        type: 'line',
+                        fill: false,
+                        pointRadius: 0
+                    });
+                });
+            }
+
+            // Create or update chart
+            const ctx = document.getElementById('marketChart').getContext('2d');
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: chartType === 'mixed' ? 'bar' : chartType,
+                data: {
+                    labels: sortedWeeks,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: false
+                        },
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function (context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    return `${label}: ${value ? value.toFixed(2) : 'N/A'}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Week'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'CQX Target Value'
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        function updateChartTargets() {
+            if (currentData.length > 0) {
+                updateChart(currentData);
+            }
+        }
+
+        function updateStatistics(data) {
+            // Get current week
+            const weeks = [...new Set(data.map(d => d.WEEK))].sort();
+            const currentWeek = weeks[weeks.length - 1] || '--';
+
+            // Count active metrics
+            const metricCount = activeMetrics.size;
+
+            // Calculate average green target
+            const greenTargets = data
+                .filter(d => activeMetrics.has(d.CQI_METRICNAME || d.METRICNAME))
+                .map(d => d.CQI_GREEN_TARGET)
+                .filter(t => t !== null && t !== undefined);
+
+            const avgGreenTarget = greenTargets.length > 0
+                ? (greenTargets.reduce((a, b) => a + b, 0) / greenTargets.length).toFixed(2)
+                : '--';
+
+            // Count data points
+            const dataPoints = data.filter(d => activeMetrics.has(d.CQI_METRICNAME || d.METRICNAME)).length;
+
+            // Update display
+            document.getElementById('currentWeek').textContent = currentWeek;
+            document.getElementById('metricCount').textContent = metricCount;
+            document.getElementById('avgGreenTarget').textContent = avgGreenTarget;
+            document.getElementById('dataPoints').textContent = dataPoints;
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        function applyFilters() {
+            fetchMarketData();
+        }
+
+        function exportChart() {
+            if (chart) {
+                const url = chart.toBase64Image();
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `market_cqx_${document.getElementById('submarketFilter').value}_${new Date().toISOString().split('T')[0]}.png`;
+                a.click();
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loadingDiv').style.display = 'block';
+            document.getElementById('chartWrapper').style.display = 'none';
+            document.getElementById('errorDiv').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingDiv').style.display = 'none';
+            document.getElementById('chartWrapper').style.display = 'block';
+            document.getElementById('errorDiv').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('loadingDiv').style.display = 'none';
+            document.getElementById('chartWrapper').style.display = 'none';
+            document.getElementById('errorDiv').style.display = 'block';
+            document.getElementById('errorDiv').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 3rem; margin-bottom: 20px;">⚠️</div>
+                    <h3 style="color: #c53030; margin-bottom: 15px;">No Data Available</h3>
+                    <p style="margin-bottom: 20px;">${message}</p>
+                    <div style="background: #fff5f5; border: 1px solid #feb2b2; border-radius: 8px; padding: 15px; margin-top: 20px; text-align: left; max-width: 600px; margin: 20px auto;">
+                        <strong>Troubleshooting Steps:</strong>
+                        <ol style="margin: 10px 0 0 20px;">
+                            <li>Ensure Flask API server is running: <code style="background: #f7fafc; padding: 2px 5px; border-radius: 3px;">python app.py</code></li>
+                            <li>Verify Snowflake credentials are configured properly</li>
+                            <li>Check that the CQI2025_TARGETS table exists and has data</li>
+                            <li>Confirm the selected submarket has data in the database</li>
+                            <li>Check network connectivity to the API server</li>
+                        </ol>
+                    </div>
+                    <button class="btn btn-primary" onclick="applyFilters()" style="margin-top: 20px;">🔄 Retry</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CQI Dashboard - Connection Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2d3748;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .test-header {
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .success {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .warning {
+            color: #f59e0b;
+            font-weight: bold;
+        }
+
+        .info {
+            color: #3b82f6;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+
+        .loading {
+            color: #6366f1;
+            font-style: italic;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            background: #e2e8f0;
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔧 CQI Dashboard - Connection Diagnostics</h1>
+
+        <div class="test-section">
+            <div class="test-header">Quick Actions</div>
+            <button onclick="runAllTests()">🚀 Run All Tests</button>
+            <button onclick="testAPIHealth()">💓 Test API Health</button>
+            <button onclick="testSnowflake()">❄️ Test Snowflake</button>
+            <button onclick="testData()">📊 Test Data Query</button>
+            <button onclick="testFilters()">🔍 Test Filters</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">1. API Health Check</div>
+            <div id="api-health">
+                <span class="info">Click "Test API Health" to check if Flask API is running...</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">2. Snowflake Connection</div>
+            <div id="snowflake-test">
+                <span class="info">Click "Test Snowflake" to verify database connection...</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">3. Data Retrieval</div>
+            <div id="data-test">
+                <span class="info">Click "Test Data Query" to fetch actual data...</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">4. Filter Options</div>
+            <div id="filter-test">
+                <span class="info">Click "Test Filters" to verify filter values...</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">5. Query Log</div>
+            <div id="query-log">
+                <pre id="log-content">No queries executed yet...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        let logContent = [];
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logContent.push(logEntry);
+            document.getElementById('log-content').textContent = logContent.join('\n');
+        }
+
+        async function testAPIHealth() {
+            const div = document.getElementById('api-health');
+            div.innerHTML = '<span class="loading">Testing API...</span>';
+            addLog('Testing API health...');
+
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    div.innerHTML = `
+                        <span class="success">✅ API is running!</span><br>
+                        <span class="status-badge status-success">CONNECTED</span><br>
+                        Status: ${data.status}<br>
+                        Timestamp: ${data.timestamp}
+                    `;
+                    addLog('API health check: SUCCESS', 'success');
+                    return true;
+                } else {
+                    div.innerHTML = '<span class="error">❌ API returned error</span>';
+                    addLog('API health check: FAILED', 'error');
+                    return false;
+                }
+            } catch (error) {
+                div.innerHTML = `
+                    <span class="error">❌ Cannot connect to API</span><br>
+                    <span class="status-badge status-error">OFFLINE</span><br>
+                    Error: ${error.message}<br>
+                    <br>
+                    <strong>Solution:</strong><br>
+                    1. Make sure Flask API is running: <code>python app.py</code><br>
+                    2. Check that port 5000 is not blocked
+                `;
+                addLog(`API connection failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testSnowflake() {
+            const div = document.getElementById('snowflake-test');
+            div.innerHTML = '<span class="loading">Testing Snowflake connection...</span>';
+            addLog('Testing Snowflake connection...');
+
+            try {
+                const response = await fetch(`${API_URL}/test`);
+                const data = await response.json();
+
+                if (response.ok && data.connection === 'success') {
+                    let html = `
+                        <span class="success">✅ Snowflake connected successfully!</span><br>
+                        <span class="status-badge status-success">CONNECTED</span><br><br>
+                        <strong>Connection Details:</strong><br>
+                        User: ${data.user}<br>
+                        Database: ${data.database}<br>
+                        Schema: ${data.schema}<br><br>
+                    `;
+
+                    if (data.table_exists) {
+                        html += `<span class="success">✅ Table CQI2025_CQX_CONTRIBUTION exists</span><br>`;
+                        html += `Total rows: <strong>${data.total_rows.toLocaleString()}</strong><br>`;
+                        html += `Recent rows (7 days): <strong>${data.recent_rows_7days.toLocaleString()}</strong><br>`;
+
+                        if (data.date_range) {
+                            html += `<br><strong>Date Range in Table:</strong><br>`;
+                            html += `Earliest: ${data.date_range.earliest || 'N/A'}<br>`;
+                            html += `Latest: ${data.date_range.latest || 'N/A'}<br>`;
+                        }
+
+                        if (data.sample_data && data.sample_data.length > 0) {
+                            html += `<br><strong>Sample Data (Top Offenders):</strong>`;
+                            html += `<table>
+                                <tr>
+                                    <th>USID</th>
+                                    <th>Metric</th>
+                                    <th>Extra Failures</th>
+                                    <th>Vendor</th>
+                                    <th>Cluster</th>
+                                    <th>Period Start</th>
+                                </tr>`;
+                            data.sample_data.forEach(row => {
+                                const failures = row.EXTRAFAILURES || 0;
+                                const failuresDisplay = failures >= 1000000 ? (failures / 1000000).toFixed(1) + 'M' :
+                                    failures >= 1000 ? (failures / 1000).toFixed(1) + 'K' :
+                                        failures.toString();
+                                html += `<tr>
+                                    <td>${row.USID || 'NULL'}</td>
+                                    <td>${row.METRICNAME || 'NULL'}</td>
+                                    <td><strong title="${failures.toLocaleString()}">${failuresDisplay}</strong></td>
+                                    <td>${row.VENDOR || 'NULL'}</td>
+                                    <td>${row.CLUSTER || 'NULL'}</td>
+                                    <td>${row.PERIODSTART || 'NULL'}</td>
+                                </tr>`;
+                            });
+                            html += `</table>`;
+                        }
+                    } else {
+                        html += `<span class="error">❌ Table CQI2025_CQX_CONTRIBUTION not found!</span>`;
+                    }
+
+                    div.innerHTML = html;
+                    addLog(`Snowflake test: SUCCESS (${data.total_rows} rows)`, 'success');
+                } else {
+                    div.innerHTML = `
+                        <span class="error">❌ Snowflake connection failed!</span><br>
+                        <span class="status-badge status-error">ERROR</span><br>
+                        Error: ${data.error || 'Unknown error'}<br>
+                        Type: ${data.error_type || 'Unknown'}<br><br>
+                        <strong>Check:</strong><br>
+                        1. private_key.txt exists in the app directory<br>
+                        2. Credentials are correct<br>
+                        3. Network access to Snowflake
+                    `;
+                    addLog(`Snowflake test failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                div.innerHTML = `<span class="error">❌ Test failed: ${error.message}</span>`;
+                addLog(`Snowflake test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testData() {
+            const div = document.getElementById('data-test');
+            div.innerHTML = '<span class="loading">Fetching data...</span>';
+            addLog('Testing data retrieval...');
+
+            // Use a wider date range for testing
+            const endDate = new Date().toISOString().split('T')[0];
+            const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+            try {
+                const params = new URLSearchParams({
+                    periodStart: startDate,
+                    periodEnd: endDate
+                });
+
+                addLog(`Querying date range: ${startDate} to ${endDate}`);
+
+                const response = await fetch(`${API_URL}/data?${params}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (Array.isArray(data) && data.length > 0) {
+                        // Sort by EXTRAFAILURES to show top offenders
+                        const sortedData = data.sort((a, b) => (b.EXTRAFAILURES || 0) - (a.EXTRAFAILURES || 0));
+                        const topOffender = sortedData[0];
+                        const failures = topOffender.EXTRAFAILURES || 0;
+                        const failuresDisplay = failures >= 1000000 ? (failures / 1000000).toFixed(1) + 'M' :
+                            failures >= 1000 ? (failures / 1000).toFixed(1) + 'K' :
+                                failures.toString();
+
+                        div.innerHTML = `
+                            <span class="success">✅ Data retrieved successfully!</span><br>
+                            <span class="status-badge status-success">OK</span><br>
+                            Rows returned: <strong>${data.length}</strong><br>
+                            <br>
+                            <strong>Top Offender:</strong><br>
+                            USID: ${topOffender.USID || 'NULL'}<br>
+                            Metric: ${topOffender.METRIC_DISPLAY || topOffender.METRICNAME || 'NULL'}<br>
+                            Extra Failures: <strong style="color: red" title="${failures.toLocaleString()}">${failuresDisplay}</strong><br>
+                            Vendor: ${topOffender.VENDOR || 'NULL'}<br>
+                            Cluster: ${topOffender.CQECLUSTER || 'NULL'}
+                        `;
+                        addLog(`Data query: SUCCESS (${data.length} rows)`, 'success');
+                    } else if (Array.isArray(data) && data.length === 0) {
+                        div.innerHTML = `
+                            <span class="warning">⚠️ Query successful but no data returned</span><br>
+                            <span class="status-badge status-warning">NO DATA</span><br>
+                            <br>
+                            <strong>Possible reasons:</strong><br>
+                            1. No data for the specified date range (${startDate} to ${endDate})<br>
+                            2. Table might be empty<br>
+                            3. Data might be filtered out<br>
+                            <br>
+                            Try adjusting the date range in the main dashboard.
+                        `;
+                        addLog('Data query: NO RESULTS', 'warning');
+                    } else {
+                        div.innerHTML = `<span class="error">❌ Unexpected response format</span>`;
+                        addLog('Data query: Invalid response format', 'error');
+                    }
+                } else {
+                    div.innerHTML = `<span class="error">❌ Query failed: ${JSON.stringify(data)}</span>`;
+                    addLog(`Data query failed: ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                div.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+                addLog(`Data query error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFilters() {
+            const div = document.getElementById('filter-test');
+            div.innerHTML = '<span class="loading">Loading filter options...</span>';
+            addLog('Testing filter options...');
+
+            try {
+                const response = await fetch(`${API_URL}/filters`);
+                const data = await response.json();
+
+                if (response.ok && !data.error) {
+                    let html = `<span class="success">✅ Filter options loaded!</span><br>`;
+                    html += '<span class="status-badge status-success">OK</span><br><br>';
+
+                    if (data.submarkets) {
+                        html += `<strong>Submarkets (${data.submarkets.length}):</strong><br>`;
+                        html += data.submarkets.slice(0, 5).join(', ');
+                        if (data.submarkets.length > 5) html += '...';
+                        html += '<br><br>';
+                    }
+
+                    if (data.cqeClusters) {
+                        html += `<strong>CQE Clusters (${data.cqeClusters.length}):</strong><br>`;
+                        html += data.cqeClusters.slice(0, 5).join(', ');
+                        if (data.cqeClusters.length > 5) html += '...';
+                        html += '<br><br>';
+                    }
+
+                    if (data.metricNames) {
+                        html += `<strong>Metrics (${data.metricNames.length}):</strong><br>`;
+                        html += data.metricNames.slice(0, 5).join(', ');
+                        if (data.metricNames.length > 5) html += '...';
+                    }
+
+                    div.innerHTML = html;
+                    addLog(`Filter test: SUCCESS (${data.submarkets?.length || 0} submarkets, ${data.cqeClusters?.length || 0} clusters, ${data.metricNames?.length || 0} metrics)`, 'success');
+                } else {
+                    div.innerHTML = `<span class="error">❌ Failed to load filters: ${data.error || 'Unknown error'}</span>`;
+                    addLog(`Filter test failed: ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                div.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+                addLog(`Filter test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function runAllTests() {
+            logContent = [];
+            addLog('Starting comprehensive test suite...');
+
+            // Run tests in sequence
+            const apiOk = await testAPIHealth();
+
+            if (apiOk) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await testSnowflake();
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await testData();
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await testFilters();
+            }
+
+            addLog('All tests completed!');
+        }
+
+        // Auto-run API health check on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(testAPIHealth, 500);
+        });
+    </script>
+</body>
+
+</html>
