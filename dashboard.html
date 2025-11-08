@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobility Scorecard - Top Offenders Dashboard</title>
+    <title>ILWI Acute Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         :root {
@@ -265,7 +265,7 @@
             background: var(--bg-tertiary);
             color: var(--text-secondary);
             padding: 16px 12px;
-            text-align: left;
+            text-align: left !important;
             font-weight: 600;
             text-transform: uppercase;
             font-size: 0.8rem;
@@ -275,7 +275,7 @@
         }
 
         th:first-child {
-            text-align: center;
+            text-align: center !important;
         }
 
         /* Align numeric column headers to the right */
@@ -287,18 +287,18 @@
         th:nth-child(8),
         th:nth-child(9),
         th:nth-child(11) {
-            text-align: right;
+            text-align: right !important;
         }
 
         td {
             padding: 16px 12px;
             border-bottom: 1px solid var(--border-color);
             color: var(--text-primary);
-            text-align: left;
+            text-align: left !important;
         }
 
         td:first-child {
-            text-align: center;
+            text-align: center !important;
         }
 
         /* Ensure numeric columns align properly */
@@ -310,7 +310,7 @@
         td:nth-child(8),
         td:nth-child(9),
         td:nth-child(11) {
-            text-align: right;
+            text-align: right !important;
         }
 
         tr:hover {
@@ -531,7 +531,7 @@
                 <span id="theme-icon">◐</span>
                 <span id="theme-text">Dark Mode</span>
             </button>
-            <h1>Mobility Scorecard Dashboard</h1>
+            <h1>ILWI Acute Dashboard</h1>
             <p>Track network performance metrics and identify top offenders by total impact</p>
         </div>
 
@@ -614,17 +614,17 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Rank</th>
-                                <th>Market</th>
-                                <th class="tooltip" data-tooltip="Combined impact from all metrics">Total Impact</th>
-                                <th class="tooltip" data-tooltip="NS/ESO metric contribution">NS/ESO</th>
-                                <th class="tooltip" data-tooltip="Quality metric contribution">Quality</th>
-                                <th class="tooltip" data-tooltip="UL Throughput contribution">UL TPUT</th>
-                                <th class="tooltip" data-tooltip="VoLTE CDR contribution">VCDR ACC</th>
-                                <th class="tooltip" data-tooltip="Voice drop contribution">Voice Drop</th>
-                                <th class="tooltip" data-tooltip="VoLTE RAN contribution">VRAN ACC</th>
-                                <th>Impact Breakdown</th>
-                                <th>Records</th>
+                                <th style="text-align: center;">Rank</th>
+                                <th style="text-align: left;">Market</th>
+                                <th style="text-align: right;" class="tooltip" data-tooltip="Combined impact from all metrics">Total Impact</th>
+                                <th style="text-align: right;" class="tooltip" data-tooltip="NS/ESO metric contribution">NS/ESO</th>
+                                <th style="text-align: right;" class="tooltip" data-tooltip="Quality metric contribution">Quality</th>
+                                <th style="text-align: right;" class="tooltip" data-tooltip="UL Throughput contribution">UL TPUT</th>
+                                <th style="text-align: right;" class="tooltip" data-tooltip="VoLTE CDR contribution">VCDR ACC</th>
+                                <th style="text-align: right;" class="tooltip" data-tooltip="Voice drop contribution">Voice Drop</th>
+                                <th style="text-align: right;" class="tooltip" data-tooltip="VoLTE RAN contribution">VRAN ACC</th>
+                                <th style="text-align: left;">Impact Breakdown</th>
+                                <th style="text-align: right;">Records</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
@@ -1007,7 +1007,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `mobility-scorecard-${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `ilwi-acute-${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
             window.URL.revokeObjectURL(url);
 
