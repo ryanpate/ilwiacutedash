@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CQX Offenders Dashboard - CQX Metrics</title>
+    <title>ILWI Acute Quality Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -41,6 +41,44 @@
         .header p {
             color: #718096;
             font-size: 1.1rem;
+        }
+
+        .disclaimer {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            color: #856404;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .disclaimer strong {
+            color: #664d03;
+        }
+
+        .contact-section {
+            background: #e7f3ff;
+            border-left: 4px solid #0066cc;
+            padding: 15px 20px;
+            margin-top: 15px;
+            border-radius: 4px;
+            color: #004085;
+            font-size: 0.9rem;
+        }
+
+        .contact-section strong {
+            color: #002752;
+        }
+
+        .contact-section a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        .contact-section a:hover {
+            text-decoration: underline;
         }
 
         .filters-section {
@@ -493,8 +531,16 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>CQX Offenders Dashboard - Extra Failures & Contribution Tracking</h1>
+            <h1>ILWI Acute Quality Dashboard</h1>
             <p>Network failures and contribution aggregated by USID</p>
+
+            <div class="disclaimer">
+                <strong>Disclaimer:</strong> The data contained is not intended to replace official HQ CQx metrics and is to be used for market acute identification.
+            </div>
+
+            <div class="contact-section">
+                <strong>Questions?</strong> Contact Ryan Pate at <a href="mailto:RP1581@ATT.COM">RP1581@ATT.COM</a>
+            </div>
         </div>
 
         <div class="filters-section">
