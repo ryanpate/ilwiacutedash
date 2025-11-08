@@ -1,7 +1,7 @@
 """
-CQI Dashboard Flask API - With FOCUSLEV-based Contribution Support
-Uses FOCUSLEV to determine correct IDXCONTR and EXTRAFAILURES values
-FOCUSLEV: 0=National, 1=Regional, 2=Market, 3=Submarket
+ILWI Acute Quality Dashboard Flask API
+Uses METRICVAULT tables for CQx metric data
+Database: PRD_MOBILITY.PRD_MOBILITYSCORECARD_VIEWS
 """
 
 from dotenv import load_dotenv
@@ -271,33 +271,34 @@ def test_connection():
         context = cur.fetchone()
 
         cur.execute("""
-            SELECT COUNT(*) 
-            FROM INFORMATION_SCHEMA.TABLES 
-            WHERE TABLE_SCHEMA = 'PRD_MOBILITYSCORECARD_VIEWS' 
-            AND TABLE_NAME = 'CQI2025_CQX_CONTRIBUTION'
+            SELECT COUNT(*)
+            FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_SCHEMA = 'PRD_MOBILITYSCORECARD_VIEWS'
+            AND TABLE_NAME IN ('METRICVAULT', 'METRICVAULT_METRICS', 'METRICVAULT_CQI25_COLORS_V')
         """)
-        table_exists = cur.fetchone()[0] > 0
+        table_exists = cur.fetchone()[0] >= 2
 
         row_count = 0
         recent_count = 0
         date_range = None
 
         if table_exists:
-            cur.execute("SELECT COUNT(*) FROM CQI2025_CQX_CONTRIBUTION")
+            cur.execute("SELECT COUNT(*) FROM METRICVAULT WHERE PERIODEND >= CURRENT_DATE - 90")
             row_count = cur.fetchone()[0]
 
             cur.execute("""
-                SELECT COUNT(*) 
-                FROM CQI2025_CQX_CONTRIBUTION
-                WHERE PERIODSTART >= DATEADD(day, -7, CURRENT_TIMESTAMP())
+                SELECT COUNT(*)
+                FROM METRICVAULT
+                WHERE PERIODEND >= DATEADD(day, -7, CURRENT_TIMESTAMP())
             """)
             recent_count = cur.fetchone()[0]
 
             cur.execute("""
-                SELECT 
-                    MIN(PERIODSTART) as earliest,
-                    MAX(PERIODSTART) as latest
-                FROM CQI2025_CQX_CONTRIBUTION
+                SELECT
+                    MIN(PERIODEND) as earliest,
+                    MAX(PERIODEND) as latest
+                FROM METRICVAULT
+                WHERE PERIODEND >= CURRENT_DATE - 90
             """)
             date_range = cur.fetchone()
 
@@ -367,21 +368,20 @@ def get_filter_options():
             'VOLTE_WIFI_CDR_25': 'WIFI-RET'
         }
 
+        # Get submarkets from METRICREPORTINGKEY (format: "Region,State,Submarket")
         cur.execute("""
-            SELECT DISTINCT SUBMKT 
-            FROM CQI2025_CQX_CONTRIBUTION 
-            WHERE SUBMKT IS NOT NULL 
-            ORDER BY SUBMKT
+            SELECT DISTINCT SPLIT_PART(METRICREPORTINGKEY, ',', 2) AS SUBMARKET
+            FROM METRICVAULT
+            WHERE METRICREPORTINGLEVEL = '2'
+            AND METRICREPORTINGKEY IS NOT NULL
+            AND PERIODEND >= CURRENT_DATE - 90
+            ORDER BY SUBMARKET
         """)
-        db_submarkets = [row[0] for row in cur.fetchall()]
+        db_submarkets = [row[0] for row in cur.fetchall() if row[0]]
 
-        cur.execute("""
-            SELECT DISTINCT CQECLUSTER 
-            FROM CQI2025_CQX_CONTRIBUTION 
-            WHERE CQECLUSTER IS NOT NULL 
-            ORDER BY CQECLUSTER
-        """)
-        db_clusters = [row[0] for row in cur.fetchall()]
+        # CQE Clusters - these will come from the CSV mapping file
+        # For now, return empty list as clusters are managed via CSV
+        db_clusters = []
 
         cur.close()
         conn.close()
