@@ -272,6 +272,16 @@
             letter-spacing: 0.5px;
             border-bottom: 2px solid var(--border-color);
             white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        /* Second header row styling */
+        thead tr:first-child th {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        thead tr:last-child th {
+            border-bottom: 2px solid var(--border-color);
         }
 
         th:first-child {
@@ -614,17 +624,20 @@
                     <table>
                         <thead>
                             <tr>
-                                <th style="text-align: center;">Rank</th>
-                                <th style="text-align: left;">Market</th>
-                                <th style="text-align: right;" class="tooltip" data-tooltip="Combined impact from all metrics">Total Impact</th>
-                                <th style="text-align: right;" class="tooltip" data-tooltip="NS/ESO metric contribution">NS/ESO</th>
-                                <th style="text-align: right;" class="tooltip" data-tooltip="Quality metric contribution">Quality</th>
-                                <th style="text-align: right;" class="tooltip" data-tooltip="UL Throughput contribution">UL TPUT</th>
-                                <th style="text-align: right;" class="tooltip" data-tooltip="VoLTE CDR contribution">VCDR ACC</th>
+                                <th rowspan="2" style="text-align: center;">Rank</th>
+                                <th rowspan="2" style="text-align: left;">Market</th>
+                                <th rowspan="2" style="text-align: right;" class="tooltip" data-tooltip="Combined impact from all metrics">Total Impact</th>
+                                <th rowspan="2" style="text-align: right;" class="tooltip" data-tooltip="NS/ESO metric contribution">NS/ESO</th>
+                                <th rowspan="2" style="text-align: right;" class="tooltip" data-tooltip="Quality metric contribution">Quality</th>
+                                <th rowspan="2" style="text-align: right;" class="tooltip" data-tooltip="UL Throughput contribution">UL TPUT</th>
+                                <th rowspan="2" style="text-align: right;" class="tooltip" data-tooltip="VoLTE CDR contribution">VCDR ACC</th>
+                                <th colspan="2" style="text-align: center;"></th>
+                                <th rowspan="2" style="text-align: left;">Impact Breakdown</th>
+                                <th rowspan="2" style="text-align: right;">Records</th>
+                            </tr>
+                            <tr>
                                 <th style="text-align: right;" class="tooltip" data-tooltip="Voice drop contribution">Voice Drop</th>
                                 <th style="text-align: right;" class="tooltip" data-tooltip="VoLTE RAN contribution">VRAN ACC</th>
-                                <th style="text-align: left;">Impact Breakdown</th>
-                                <th style="text-align: right;">Records</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
