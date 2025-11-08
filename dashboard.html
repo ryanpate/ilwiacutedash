@@ -274,10 +274,43 @@
             white-space: nowrap;
         }
 
+        th:first-child {
+            text-align: center;
+        }
+
+        /* Align numeric column headers to the right */
+        th:nth-child(3),
+        th:nth-child(4),
+        th:nth-child(5),
+        th:nth-child(6),
+        th:nth-child(7),
+        th:nth-child(8),
+        th:nth-child(9),
+        th:nth-child(11) {
+            text-align: right;
+        }
+
         td {
             padding: 16px 12px;
             border-bottom: 1px solid var(--border-color);
             color: var(--text-primary);
+            text-align: left;
+        }
+
+        td:first-child {
+            text-align: center;
+        }
+
+        /* Ensure numeric columns align properly */
+        td:nth-child(3),
+        td:nth-child(4),
+        td:nth-child(5),
+        td:nth-child(6),
+        td:nth-child(7),
+        td:nth-child(8),
+        td:nth-child(9),
+        td:nth-child(11) {
+            text-align: right;
         }
 
         tr:hover {
@@ -339,9 +372,9 @@
             font-size: 0.875rem;
         }
 
-        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
-        .rank-2 { background: linear-gradient(135deg, #C0C0C0, #808080); color: #000; }
-        .rank-3 { background: linear-gradient(135deg, #CD7F32, #8B4513); color: #fff; }
+        .rank-1 { background: linear-gradient(135deg, #dc3545, #c82333); color: #fff; }
+        .rank-2 { background: linear-gradient(135deg, #ffc107, #e0a800); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #28a745, #218838); color: #fff; }
         .rank-other { background: var(--bg-tertiary); color: var(--text-secondary); }
 
         /* Impact Breakdown */
@@ -352,6 +385,13 @@
             border-radius: 4px;
             overflow: hidden;
             margin-top: 4px;
+            min-width: 180px;
+        }
+
+        /* Fix Impact Breakdown column width */
+        td:nth-child(10) {
+            min-width: 200px;
+            max-width: 200px;
         }
 
         .impact-segment {
@@ -488,10 +528,10 @@
         <!-- Header -->
         <div class="header">
             <button class="theme-toggle" onclick="toggleTheme()">
-                <span id="theme-icon">🌙</span>
+                <span id="theme-icon">◐</span>
                 <span id="theme-text">Dark Mode</span>
             </button>
-            <h1>📊 Mobility Scorecard Dashboard</h1>
+            <h1>Mobility Scorecard Dashboard</h1>
             <p>Track network performance metrics and identify top offenders by total impact</p>
         </div>
 
@@ -517,7 +557,7 @@
 
         <!-- Filters -->
         <div class="filters-section">
-            <h2>🔍 Filters</h2>
+            <h2>Filters</h2>
             <div class="filters-grid">
                 <div class="filter-group">
                     <label for="startDate">Start Date</label>
@@ -559,7 +599,7 @@
         <!-- Top Offenders Table -->
         <div class="data-section">
             <div class="section-header">
-                <h2>🎯 Top Offenders (by Total Impact)</h2>
+                <h2>Top Offenders (by Total Impact)</h2>
             </div>
 
             <div id="alertContainer"></div>
@@ -645,10 +685,10 @@
             const icon = document.getElementById('theme-icon');
             const text = document.getElementById('theme-text');
             if (theme === 'dark') {
-                icon.textContent = '☀️';
+                icon.textContent = '○';
                 text.textContent = 'Light Mode';
             } else {
-                icon.textContent = '🌙';
+                icon.textContent = '◐';
                 text.textContent = 'Dark Mode';
             }
         }
@@ -818,7 +858,7 @@
                     <td>${row.vcdr_acc_impact.toFixed(2)}</td>
                     <td>${row.voice_drop_impact.toFixed(2)}</td>
                     <td>${row.vran_acc_impact.toFixed(2)}</td>
-                    <td style="width: 200px;">${breakdownHtml}</td>
+                    <td>${breakdownHtml}</td>
                     <td>${row.record_count}</td>
                 `;
 
